@@ -1,0 +1,287 @@
+/*
+ * The promo canvases. Tokens are the site's own (app/(site)/site.css, linked before this file
+ * under html[data-site]); this file only lays out fixed-size posters in that language:
+ * ink on sheet, 1.5px-ruled square frames, the four locate colors as line work only, Archivo
+ * for words and Martian Mono for figures and labels. Sizes are in px: every canvas is a
+ * fixed pixel size, rendered at device scale 1.
+ */
+
+html[data-site] {
+  --nf-archivo: "Archivo";
+  --nf-martian: "Martian Mono";
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  background: var(--sheet);
+}
+
+.p {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--sheet);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  font-family: var(--face);
+  color: var(--ink);
+}
+
+.p-wordmark {
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.p-mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Drawing annotations: uppercase mono, condensed, tracked. */
+.p-key {
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+.p-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--ink);
+}
+
+.p-h1 {
+  text-wrap: balance;
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.028em;
+  line-height: 1.02;
+}
+
+.p-lede {
+  text-wrap: pretty;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* ---------- The figure: the loudest thing on every canvas ---------- */
+
+.p-figure {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.p-cur {
+  font-size: 0.6em;
+  vertical-align: 0.5em;
+  margin-right: 0.04em;
+}
+
+.p-struck .p-figure {
+  position: relative;
+  align-self: flex-start;
+  color: var(--ink-2);
+}
+
+/* The checked-off share keeps its size and takes a strike, drawn so the raised sign shares it. */
+.p-struck .p-figure::after {
+  content: "";
+  position: absolute;
+  left: -0.03em;
+  right: -0.03em;
+  top: 50%;
+  height: 0.035em;
+  background: var(--ink);
+}
+
+/* The share chip: a square on sheet highlight with the figure, a drawn box and a caption. */
+.p-chip {
+  position: relative;
+  background: var(--sheet-hi);
+  border: 3px solid var(--ink);
+}
+
+.p-chip.is-owner {
+  border-width: 6px;
+}
+
+.p-caption {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.p-box {
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  border: 0.12em solid var(--ink);
+  display: inline-grid;
+  place-items: center;
+}
+
+.p-box.is-checked {
+  background: var(--ink);
+}
+
+.p-box svg {
+  width: 72%;
+  height: 72%;
+}
+
+/* A lane: the utility's line in its color and dash, its name and total written on it. */
+/* Its label sits at the far end, by the meters, clear of every drop (the Lane Label Rule). */
+.p-lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.p-lane svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.p-lane-label {
+  position: relative;
+  background: var(--sheet);
+  padding-left: 0.6em;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* The drop from a lane into its chip. */
+.p-drop {
+  position: absolute;
+  overflow: visible;
+}
+
+/* The sheet frame: 1.5px ink at site scale, drawn at 3px on a poster. */
+.p-sheet {
+  border: 3px solid var(--ink);
+  background: var(--sheet-hi);
+}
+
+/* ---------- Device frames: line drawings, ink only, no shadow ---------- */
+
+.p-browser {
+  border: 3px solid var(--ink);
+  background: var(--sheet-hi);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.p-browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 52px;
+  padding: 0 16px;
+  border-bottom: 3px solid var(--ink);
+  background: var(--sheet);
+}
+
+.p-browser-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.p-browser-dots i {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--ink);
+}
+
+.p-browser-url {
+  flex: 1;
+  height: 32px;
+  border: 2px solid var(--ink);
+  background: var(--sheet-hi);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.p-browser img {
+  display: block;
+  width: 100%;
+}
+
+/* A phone is drawn, so its corners are the object's own, not a UI radius. */
+.p-phone {
+  border: 14px solid var(--ink);
+  border-radius: 58px;
+  background: var(--ink);
+  overflow: hidden;
+  position: relative;
+}
+
+.p-phone img {
+  display: block;
+  width: 100%;
+  border-radius: 0 0 44px 44px;
+}
+
+/* The status bar the frame draws above the capture, on the app header's ground. */
+.p-phone-status {
+  height: 44px;
+  border-radius: 44px 44px 0 0;
+  background: var(--sheet-hi);
+  display: flex;
+  align-items: center;
+  padding: 4px 34px 0;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.p-phone::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 104px;
+  height: 28px;
+  margin-left: -52px;
+  border-radius: 14px;
+  background: var(--ink);
+}
+
+.p-arrow {
+  display: inline-block;
+  vertical-align: middle;
+}

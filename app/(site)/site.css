@@ -1,0 +1,2391 @@
+/*
+ * The public site's world: a drafting sheet. Neither household theme applies here; these
+ * tokens live on html[data-site] (set by the root layout for site pages only). Black ink and
+ * the four sidewalk-locate utility colors are the whole palette; tone comes from hatching.
+ * Light only: it's a sheet of paper, and the figures have to read on it at a glance.
+ * The page is spare on purpose: one drawing (the plan) in one frame, and plain type around it.
+ */
+
+html[data-site] {
+  --sheet: #f3f5f4;
+  --sheet-hi: #fbfcfb;
+  --ink: #111315;
+  --ink-2: #4a5056;
+  --ink-hover: #2b3036;
+  --rule: rgba(17, 19, 21, 0.2);
+  --rule-soft: rgba(17, 19, 21, 0.1);
+  --grid: rgba(17, 19, 21, 0.045);
+  --electric: #d6231b;
+  --gas: #d29c00;
+  --water: #1b5ecf;
+  --wifi: #ec6612;
+  --highlight: rgba(242, 196, 0, 0.42);
+  --wall: 7px;
+
+  color-scheme: light;
+  background: var(--sheet);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html[data-site] ::selection {
+  background: var(--highlight);
+  color: var(--ink);
+}
+
+html[data-site] input {
+  caret-color: var(--ink);
+}
+
+/* The faces arrive as next/font variables on .site, so the stacks resolve here, not on html. */
+.site {
+  --face: var(--nf-archivo), system-ui, sans-serif;
+  --mono: var(--nf-martian), ui-monospace, monospace;
+  font-family: var(--face);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.site a {
+  color: inherit;
+}
+
+.site :focus-visible {
+  outline: 2px solid var(--water);
+  outline-offset: 2px;
+}
+
+.s-wrap {
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 640px) {
+  .s-wrap {
+    padding: 0 28px;
+  }
+}
+
+.s-mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Header: wordmark, two page links, the way in. One row at every width. ---------- */
+
+.s-header {
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--sheet);
+  padding-top: env(safe-area-inset-top); /* the status bar's strip on iOS (globals.css, body) */
+}
+
+.s-header-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 60px;
+}
+
+.s-wordmark {
+  font-weight: 800;
+  font-stretch: 118%;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.s-nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 6px;
+}
+
+.s-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 20px 10px 18px;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -1.5px;
+  font-weight: 550;
+  font-size: 0.94rem;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--ink-2);
+  transition: color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.s-nav a:hover {
+  color: var(--ink);
+}
+
+.s-nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.s-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+/* The demo button yields to the phone: the hero's demo link is a thumb away. (Scoped so it
+   outranks .s-btn's display, which comes later.) */
+.s-header-operator {
+  gap: 18px;
+}
+
+.s-header-operator form {
+  display: contents;
+}
+
+.s-header-operator button.s-link {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.s-header-actions .s-header-demo {
+  display: none;
+}
+
+/* Signed in, the way-in button says "Open" on a phone and "Open your household" from 640px
+   (the long label stays in the accessible name; the short one is aria-hidden). */
+.s-header-cta-long {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .s-header-actions .s-header-demo {
+    display: inline-flex;
+  }
+  .s-header-cta-long {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+  .s-header-cta-short {
+    display: none;
+  }
+}
+
+@media (max-width: 479px) {
+  .s-header-row {
+    gap: 10px;
+  }
+  .s-nav {
+    margin-left: 0;
+  }
+  .s-nav a {
+    padding: 20px 6px 18px;
+    font-size: 0.9rem;
+  }
+}
+
+.s-link {
+  font-weight: 600;
+  font-size: 0.94rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--rule);
+  transition: text-decoration-color 120ms ease-out;
+}
+
+.s-link:hover {
+  text-decoration-color: var(--ink);
+}
+
+/* ---------- Buttons and fields: square, inked ---------- */
+
+.s-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1.5px solid var(--ink);
+  background: var(--ink);
+  color: var(--sheet-hi);
+  font-family: var(--face);
+  font-weight: 650;
+  font-stretch: 106%;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.site .s-btn {
+  color: var(--sheet-hi);
+}
+
+.s-btn:hover {
+  background: var(--ink-hover);
+}
+
+.s-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.site .s-btn-line {
+  background: transparent;
+  color: var(--ink);
+}
+
+.s-btn-line:hover {
+  background: var(--sheet-hi);
+}
+
+.s-btn-sm {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.9rem;
+}
+
+.s-arrow {
+  width: 18px;
+  height: 10px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+/* The sign-up: field and button in one row from 640px, one line of small print under it. */
+.s-signup {
+  max-width: 560px;
+}
+
+.s-signup-row {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .s-signup-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.s-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  background: var(--sheet-hi);
+  color: var(--ink);
+  font-family: var(--face);
+  font-size: 16px;
+}
+
+.s-input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.75;
+}
+
+.s-input:focus-visible {
+  outline: 2px solid var(--water);
+  outline-offset: 0;
+}
+
+.s-hint {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.s-demo-link,
+.s-link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.s-hint .s-demo-link {
+  font-size: inherit;
+  color: var(--ink);
+}
+
+/* ---------- The hero: the pitch and the way in, plain type on the sheet ---------- */
+
+.s-hero {
+  padding: 52px 0 40px;
+}
+
+@media (min-width: 640px) {
+  .s-hero {
+    padding: 80px 0 52px;
+  }
+}
+
+.s-h1 {
+  font-weight: 800;
+  font-stretch: 112%;
+  font-size: clamp(2.2rem, 1.3rem + 3vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+
+.s-lede {
+  margin-top: 18px;
+  font-size: clamp(1.02rem, 0.94rem + 0.35vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 56ch;
+  text-wrap: pretty;
+}
+
+.s-hero .s-signup {
+  margin-top: 28px;
+}
+
+/* Drawing annotations (the 404's number): mono, small, tracked. */
+.s-key {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  font-stretch: 87.5%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ---------- The sheet: the one frame on the page, holding the plan ---------- */
+
+.s-sheet {
+  position: relative;
+  max-width: 1100px;
+  border: 1.5px solid var(--ink);
+  background-color: var(--sheet);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+  padding: 16px 12px 14px;
+  container-type: inline-size;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .s-sheet {
+    padding: 24px 24px 20px;
+  }
+}
+
+/* ---------- The floor plan ---------- */
+
+/* Above the rooms: a tab per bill on the left, the mode toggle on the right. */
+.fp-bar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@container (min-width: 760px) {
+  .fp-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+.fp-mode {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.fp-seg {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+  width: 100%;
+}
+
+@container (min-width: 760px) {
+  .fp-seg {
+    width: auto;
+  }
+}
+
+.fp-seg button {
+  min-height: 42px;
+  padding: 6px 14px;
+  line-height: 1.2;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--face);
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+}
+
+.fp-seg button + button {
+  border-left: 1.5px solid var(--ink);
+}
+
+.fp-seg button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--sheet-hi);
+}
+
+.fp-seg button[aria-pressed="false"]:hover {
+  background: var(--sheet);
+}
+
+@container (max-width: 420px) {
+  .fp-seg button {
+    font-size: 0.85rem;
+    padding: 6px 8px;
+  }
+}
+
+.fp-bills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@container (min-width: 560px) {
+  .fp-bills {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+/* A bill tab: its dash and its name. The total and who fronts it are on the plan once it's selected. */
+.fp-bill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 14px 0 12px;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--face);
+  font-weight: 650;
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease-out, background-color 140ms ease-out;
+}
+
+.fp-bill:hover {
+  border-color: var(--ink);
+}
+
+.fp-bill[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--sheet-hi);
+  box-shadow: inset 0 -3px 0 var(--u);
+}
+
+.fp-swatch {
+  width: 36px;
+  height: 8px;
+  flex: none;
+  stroke: var(--u);
+  stroke-width: 3;
+  stroke-linecap: butt;
+}
+
+[data-util="electric"] {
+  --u: var(--electric);
+}
+[data-util="gas"] {
+  --u: var(--gas);
+}
+[data-util="water"] {
+  --u: var(--water);
+}
+[data-util="wifi"] {
+  --u: var(--wifi);
+}
+
+/* The plan itself: four rooms around the hall at every width. The grid's background is the
+   poché; the gaps between cells are walls. Nothing here changes size with the selected bill:
+   every chip is the same width and every figure the same size, so the sheet holds still. */
+.fp-plan {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto 104px auto;
+  grid-template-areas: "r1 r2" "hall hall" "r3 r4";
+  gap: var(--wall);
+  padding: calc(var(--wall) + 3px);
+  background: var(--ink);
+}
+
+@container (min-width: 720px) {
+  .fp-plan {
+    --wall: 8px;
+    grid-template-rows: auto 116px auto;
+  }
+}
+
+.fp-room {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 168px;
+  padding: 10px 8px 10px;
+  background: var(--sheet-hi);
+  min-width: 0;
+}
+
+@container (min-width: 720px) {
+  .fp-room {
+    min-height: 184px;
+    padding: 14px 18px 16px;
+  }
+}
+
+/* Bottom-row rooms: the share sits by the hall wall, the name at the far side. */
+.fp-room[data-side="bottom"] {
+  flex-direction: column-reverse;
+}
+
+.fp-room-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fp-room-no {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  font-stretch: 87.5%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.fp-room-person {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.fp-share {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "figure figure" "check caption";
+  align-items: center;
+  column-gap: 7px;
+  row-gap: 4px;
+  width: min(100%, 16rem);
+  padding: 6px 8px 7px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+  color: var(--ink);
+  font-family: var(--face);
+  text-align: left;
+}
+
+button.fp-share {
+  cursor: pointer;
+  transition: background-color 140ms ease-out;
+}
+
+button.fp-share:hover {
+  background: var(--sheet);
+}
+
+/* The owner's chip wears the bill's color: a 3px rule where the others have 1.5px of ink. */
+.fp-share-owner {
+  grid-template-areas: "figure figure" "caption caption";
+  border: 3px solid var(--u);
+  padding: 4.5px 6.5px 5.5px;
+}
+
+.fp-share-owner .fp-caption {
+  color: var(--ink);
+}
+
+.fp-check {
+  grid-area: check;
+  width: 16px;
+  height: 16px;
+}
+
+.fp-check svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.fp-share[aria-pressed="true"] .fp-check rect {
+  fill: var(--ink);
+}
+
+.fp-share[aria-pressed="true"] .fp-check path {
+  stroke: var(--sheet-hi);
+  stroke-width: 2;
+}
+
+.fp-figure {
+  grid-area: figure;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-size: clamp(2.1rem, 0.9rem + 5.2cqi, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.fp-cur {
+  font-size: 0.6em;
+  vertical-align: 0.48em;
+  margin-right: 0.04em;
+}
+
+.fp-share[aria-pressed="true"] .fp-figure {
+  color: var(--ink-2);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.fp-caption {
+  grid-area: caption;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+
+.fp-hall {
+  position: relative;
+  background: var(--sheet-hi);
+  padding: 8px 12px;
+}
+
+.fp-meter {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 10px;
+  width: 30px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fp-meter span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fp-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.fp-door {
+  fill: var(--sheet-hi);
+}
+
+.fp-trunk {
+  stroke: var(--u);
+  stroke-width: 1.5;
+  opacity: 0.4;
+  transition: opacity 200ms ease-out;
+}
+
+.fp-lane[data-on] .fp-trunk {
+  stroke-width: 3;
+  opacity: 1;
+}
+
+/* The selected lane's label, haloed in the sheet color so a drop passes under it. */
+.fp-lane-label {
+  paint-order: stroke;
+  stroke: var(--sheet-hi);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--ink);
+}
+
+.fp-drop-draft {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  animation: fp-draft 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fp-drop-ink {
+  fill: none;
+  stroke: var(--u);
+  stroke-width: 2.5;
+  animation: fp-ink 260ms ease-out both;
+}
+
+.fp-drop[data-paid] .fp-drop-ink,
+.fp-drop[data-owner] .fp-drop-ink {
+  stroke-width: 3.5;
+}
+
+.fp-terminal {
+  fill: var(--u);
+  stroke: var(--ink);
+  stroke-width: 1.2;
+  animation: fp-ink 200ms ease-out both;
+}
+
+.fp-drop[data-owner] .fp-terminal {
+  fill: var(--ink);
+}
+
+@keyframes fp-draft {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  70% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes fp-ink {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Under the rooms: one line that says the split in words, and the sample note at its end. */
+.fp-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 24px;
+  margin-top: 14px;
+}
+
+.fp-summary {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 72ch;
+  min-height: 1.5em;
+  text-wrap: pretty;
+}
+
+.fp-sample {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-stretch: 87.5%;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* ---------- Calm sections below the sheet ---------- */
+
+.s-section {
+  padding: 64px 0;
+}
+
+.s-section + .s-section {
+  border-top: 1px solid var(--rule);
+}
+
+@media (min-width: 640px) {
+  .s-section {
+    padding: 96px 0;
+  }
+}
+
+.s-h2 {
+  font-weight: 800;
+  font-stretch: 108%;
+  font-size: clamp(1.7rem, 1.2rem + 1.8vw, 2.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+
+.s-h3 {
+  font-weight: 700;
+  font-size: 1.08rem;
+  line-height: 1.3;
+}
+
+.s-prose {
+  font-size: 1.04rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.s-prose + .s-prose {
+  margin-top: 14px;
+}
+
+.s-prose strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.s-section-head {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 44px;
+}
+
+@media (min-width: 900px) {
+  .s-split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 64px;
+    align-items: start;
+  }
+  .s-split .s-section-head {
+    margin-bottom: 0;
+    position: sticky;
+    top: 32px;
+  }
+}
+
+/* Home: three facts in a row under one rule, then one line that hands off to How it works. */
+.s-facts {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 28px 40px;
+  padding-top: 28px;
+  border-top: 1.5px solid var(--ink);
+}
+
+@media (min-width: 760px) {
+  .s-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.s-facts p {
+  margin-top: 6px;
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 38ch;
+  text-wrap: pretty;
+}
+
+.s-facts-more {
+  margin-top: 44px;
+  max-width: 70ch;
+}
+
+/* General notes (About): numbered facts under one rule. */
+.s-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: note;
+  display: grid;
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-notes li {
+  counter-increment: note;
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  gap: 4px 12px;
+  padding: 20px 0 22px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.s-notes li::before {
+  content: counter(note) ".";
+  grid-row: span 2;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding-top: 3px;
+}
+
+.s-notes p {
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 58ch;
+}
+
+.s-notes-plain li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.s-notes-plain li::before {
+  content: none;
+}
+
+/* Steps on How it works: the monthly cycle, in order. */
+.s-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: step;
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-steps > li {
+  counter-increment: step;
+  display: grid;
+  gap: 8px 24px;
+  padding: 28px 0 30px;
+  border-bottom: 1px solid var(--rule);
+}
+
+@media (min-width: 760px) {
+  .s-steps > li {
+    grid-template-columns: 4.5rem minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: start;
+  }
+}
+
+.s-steps > li::before {
+  content: counter(step);
+  font-family: var(--mono);
+  font-weight: 600;
+  font-stretch: 85%;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.s-steps-note {
+  margin: 0 0 16px;
+  white-space: normal; /* .fp-sample is a one-line tag on the plan; here it is a sentence, so it wraps on a phone */
+}
+
+.s-step-aside {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  font-stretch: 87.5%;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  background: var(--sheet-hi);
+  align-self: start;
+}
+
+.s-step-aside b {
+  font-weight: 600;
+}
+
+.s-pair {
+  display: grid;
+  gap: 0;
+  border: 1.5px solid var(--ink);
+}
+
+@media (min-width: 760px) {
+  .s-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+  .s-pair > * + * {
+    border-left: 1.5px solid var(--ink);
+  }
+}
+
+.s-pair > * {
+  padding: 24px 20px 26px;
+}
+
+@media (max-width: 759px) {
+  .s-pair > * + * {
+    border-top: 1.5px solid var(--ink);
+  }
+}
+
+@media (min-width: 640px) {
+  .s-pair > * {
+    padding: 28px 30px 30px;
+  }
+}
+
+.s-pair .s-prose {
+  margin-top: 8px;
+  font-size: 0.98rem;
+}
+
+.s-defs {
+  display: grid;
+  gap: 0 48px;
+}
+
+@media (min-width: 760px) {
+  .s-defs {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.s-defs > div {
+  padding: 18px 0 20px;
+  border-top: 1px solid var(--rule);
+}
+
+.s-defs dt {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.s-defs dd {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 54ch;
+}
+
+/* Page header for the inner sheets (How it works, About) and the 404. */
+.s-page-head {
+  padding: 56px 0 8px;
+}
+
+@media (min-width: 640px) {
+  .s-page-head {
+    padding: 88px 0 8px;
+  }
+}
+
+.s-steps .s-h3 + .s-prose,
+.s-section-head .s-h2 + .s-prose {
+  margin-top: 6px;
+}
+
+.s-page-head .s-h1 {
+  font-size: clamp(2.4rem, 1.4rem + 3.6vw, 4.2rem);
+  max-width: 16ch;
+}
+
+.s-page-head .s-lede {
+  font-size: 1.15rem;
+  max-width: 54ch;
+  margin-top: 20px;
+}
+
+.s-404-actions {
+  gap: 24px;
+  margin-top: 28px;
+}
+
+/* ---------- The close: one more chance to start ---------- */
+
+.s-close {
+  padding: 0 0 72px;
+}
+
+@media (min-width: 640px) {
+  .s-close {
+    padding-bottom: 104px;
+  }
+}
+
+.s-close .s-h2 {
+  max-width: 18ch;
+}
+
+.s-close .s-prose {
+  margin-top: 12px;
+}
+
+/* Home: a rule, the heading and the sign-up side by side from 900px. */
+.s-close-row {
+  display: grid;
+  gap: 28px;
+  padding-top: 40px;
+  border-top: 1.5px solid var(--ink);
+}
+
+@media (min-width: 900px) {
+  .s-close-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 64px;
+    align-items: start;
+    padding-top: 48px;
+  }
+  .s-close-row .s-signup {
+    justify-self: end;
+    width: 100%;
+  }
+}
+
+/* Inner sheets: framed like a title block. */
+.s-close-panel {
+  display: grid;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+}
+
+.s-close-panel > * {
+  padding: 26px 16px 28px;
+  min-width: 0;
+}
+
+.s-close-panel > * + * {
+  border-top: 1px solid var(--ink);
+}
+
+@media (min-width: 640px) {
+  .s-close-panel > * {
+    padding: 36px 32px 38px;
+  }
+}
+
+@media (min-width: 900px) {
+  .s-close-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .s-close-panel > * + * {
+    border-top: 0;
+    border-left: 1px solid var(--ink);
+  }
+}
+
+/* ---------- Footer: one strip ---------- */
+
+.s-footer {
+  margin-top: auto;
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 28px;
+  padding-top: 22px;
+  padding-bottom: 24px;
+}
+
+.s-wordmark-sm {
+  font-size: 1.1rem;
+}
+
+.s-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+
+.s-footer-links form {
+  display: contents; /* the sign-out button sits on the links' baseline */
+}
+
+.s-footer-links a,
+.s-footer-links button {
+  font-size: 0.92rem;
+  font-family: inherit;
+  text-decoration: none;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.s-footer-links a:hover,
+.s-footer-links button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.s-footer-note {
+  margin-left: auto;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+
+.s-footer-note a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.s-footer-note a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+  .s-footer-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .s-footer-note {
+    margin-left: 0;
+  }
+}
+
+/* ---------- Sign in: the code flow, a narrow column on the plain sheet ---------- */
+
+.s-login {
+  max-width: 536px; /* 480px of column inside the wrap's gutters */
+  flex: 1 0 auto;
+  padding-top: 56px;
+  padding-bottom: 96px;
+}
+
+@media (min-width: 640px) {
+  .s-login {
+    padding-top: 88px;
+  }
+}
+
+.s-login .s-key {
+  margin-bottom: 14px;
+}
+
+.s-login .s-h1 {
+  font-size: clamp(2.2rem, 1.5rem + 2.4vw, 3rem);
+}
+
+.s-login .s-lede strong {
+  color: var(--ink);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.s-login-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.s-label {
+  font-weight: 650;
+  font-size: 0.94rem;
+}
+
+/* The code is a figure: mono, wide-set, centered, the largest type in the form. */
+.s-code {
+  min-height: 60px;
+  font-family: var(--mono);
+  font-size: 1.6rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  padding-left: calc(14px + 0.4em);
+}
+
+/* Errors: ink text with the electric line down its edge (color is never the only cue). */
+.s-alert {
+  border: 1.5px solid var(--ink);
+  border-left: 6px solid var(--electric);
+  background: var(--sheet-hi);
+  padding: 10px 14px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.s-login .s-hint {
+  margin-top: 18px;
+}
+
+/* The coming-soon page's waitlist: its own block under the lede, set off by an ink rule. */
+.s-waitlist {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-waitlist .s-h3 {
+  margin-bottom: 12px;
+}
+
+.s-waitlist .s-hint {
+  margin-top: 10px;
+}
+
+.s-waitlist + .s-hint {
+  margin-top: 40px;
+}
+
+/* ---------- Your pages: account, your households, onboarding (app/(app)) ---------- */
+
+/* The same narrow column as sign-in, a little wider for a form with two-up choice cards. */
+.s-account {
+  max-width: 696px; /* 640px of column inside the wrap's gutters */
+  flex: 1 0 auto;
+  padding-top: 56px;
+  padding-bottom: 96px;
+}
+
+@media (min-width: 640px) {
+  .s-account {
+    padding-top: 88px;
+  }
+}
+
+.s-account > * + * {
+  margin-top: 28px;
+}
+
+.s-account .s-key + .s-h1 {
+  margin-top: 14px;
+}
+
+.s-account .s-h1 {
+  font-size: clamp(2.2rem, 1.5rem + 2.4vw, 3rem);
+}
+
+.s-account .s-h1 + .s-lede {
+  margin-top: 18px;
+}
+
+.s-form {
+  display: grid;
+  gap: 24px;
+}
+
+.s-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.s-field .s-hint {
+  margin-top: 2px;
+}
+
+.s-input-sm {
+  min-height: 38px;
+  font-size: 0.92rem;
+}
+
+/* The same stroked V as the app's selects and header menus (select.field-input in globals.css). */
+select.s-input {
+  appearance: none;
+  background-image: linear-gradient(to bottom left, transparent calc(50% - 0.8px), var(--ink) calc(50% - 0.8px), var(--ink) calc(50% + 0.8px), transparent calc(50% + 0.8px)),
+    linear-gradient(to bottom right, transparent calc(50% - 0.8px), var(--ink) calc(50% - 0.8px), var(--ink) calc(50% + 0.8px), transparent calc(50% + 0.8px));
+  background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 40px;
+}
+
+/* A note the page came back with: the alert's frame without the electric edge. */
+.s-notice {
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+  padding: 10px 14px;
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+/* Choice cards (mode, theme): the bill tabs' language. A 20% rule at rest; the chosen one
+   takes the ink border and a 3px ink rule along its bottom. */
+.s-choices {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .s-choices {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.s-choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px 16px;
+  border: 1.5px solid var(--rule);
+  background: var(--sheet-hi);
+  cursor: pointer;
+  transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
+}
+
+.s-choice:hover {
+  border-color: var(--ink-2);
+}
+
+.s-choice:has(:checked) {
+  border-color: var(--ink);
+  box-shadow: inset 0 -3px 0 var(--ink);
+}
+
+.s-choice input {
+  margin-top: 3px;
+  accent-color: var(--ink);
+}
+
+.s-choice:has(:focus-visible) {
+  outline: 2px solid var(--water);
+  outline-offset: 2px;
+}
+
+/* A theme card (onboarding): the theme's own swatch across the top, the radio row under it. */
+.s-choice-theme {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.s-choice-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px 16px;
+  border-top: 1.5px solid var(--rule);
+}
+
+.s-choice-theme:has(:checked) .s-choice-row {
+  border-top-color: var(--ink);
+}
+
+.s-choice-title {
+  display: block;
+  font-weight: 650;
+  font-size: 0.98rem;
+}
+
+.s-choice-blurb {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+/* A utility card (onboarding): a checkbox and the name, then, while checked, its emoji and fee.
+   The card is no label (it holds fields), so only the checkbox's own focus rings it. */
+.s-utility {
+  cursor: default;
+  align-items: center;
+  align-content: start; /* an unchecked card stretched by its row keeps its name at the top */
+}
+
+.s-utility > label {
+  cursor: pointer;
+}
+
+.s-utility:has(:focus-visible) {
+  outline: none;
+}
+
+.s-utility:has(> input:focus-visible) {
+  outline: 2px solid var(--water);
+  outline-offset: 2px;
+}
+
+.s-utility-fields {
+  grid-column: 2;
+  display: none;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 10px;
+}
+
+.s-utility:has(> input:checked) .s-utility-fields {
+  display: grid;
+}
+
+.s-utility-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  color: var(--ink-2);
+}
+
+/* A note for ledger households only, shown while that mode is the one picked. */
+.s-ledger-only {
+  display: none;
+}
+
+.s-form:has(input[name="mode"][value="ledger"]:checked) .s-ledger-only {
+  display: block;
+}
+
+/* A checkbox row (the account page's email settings): the box and its label on one line. */
+.s-form-tight {
+  gap: 10px;
+}
+
+.s-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.96rem;
+  cursor: pointer;
+}
+
+.s-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.s-form-tight > div {
+  margin-top: 6px;
+}
+
+/* A framed block on the sheet (each calendar on /account): the title block's frame. */
+.s-card {
+  display: grid;
+  gap: 16px;
+  padding: 22px 20px 24px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+}
+
+.s-card .s-prose {
+  margin-top: 6px;
+  font-size: 0.96rem;
+}
+
+.s-card .s-hint {
+  margin-top: 0;
+}
+
+.s-card-foot {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+/* A ruled list (your households): a 1.5px rule on top, hairlines between rows. */
+.s-list {
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.s-list li > div {
+  min-width: 0;
+}
+
+.s-list-name {
+  display: block;
+  font-weight: 650;
+  font-stretch: 106%;
+}
+
+.s-list-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Operator admin (/admin): sections beside the content, ruled tables, one form ---------- */
+
+/* The page uses the sheet's full width (the wrap's 1360px): the list of sections at the left
+   (one picker on a phone) and the open section at the right. Tables are the site's ruled list
+   drawn as a table: a 1.5px rule on top, hairlines between rows, small uppercase labels, figures
+   right-aligned in mono. Nothing is framed but what is a field: the pick list, the delete panel. */
+.s-admin {
+  flex: 1 0 auto;
+  padding-top: 40px;
+  padding-bottom: 96px;
+}
+
+@media (min-width: 640px) {
+  .s-admin {
+    padding-top: 56px;
+  }
+}
+
+.s-admin-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 28px;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--ink);
+  margin-bottom: 24px;
+}
+
+.s-admin-head .s-h1 {
+  font-size: clamp(2rem, 1.4rem + 1.8vw, 2.6rem);
+}
+
+.s-admin-head .s-lede {
+  margin-top: 0;
+  font-size: 1rem;
+  max-width: none;
+}
+
+.s-admin-grid {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .s-admin-grid {
+    grid-template-columns: 11.5rem minmax(0, 1fr);
+    gap: 44px;
+  }
+}
+
+/* The sections: a picker on a phone, a sticky list from 900px. The open one takes the ink edge
+   and the sheet-highlight ground, the way a chosen choice card does. */
+.s-admin-nav-list {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .s-admin-nav {
+    position: sticky;
+    top: 24px;
+  }
+
+  .s-admin-nav-phone {
+    display: none;
+  }
+
+  .s-admin-nav-list {
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1.5px solid var(--ink);
+  }
+}
+
+.s-admin-nav-list button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 10px 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 550;
+  font-size: 0.94rem;
+  text-align: left;
+  cursor: pointer;
+  transition: color 120ms ease-out, background-color 120ms ease-out;
+}
+
+.s-admin-nav-list button:hover {
+  color: var(--ink);
+}
+
+.s-admin-nav-list button[aria-current] {
+  color: var(--ink);
+  font-weight: 700;
+  border-left-color: var(--ink);
+  background: var(--sheet-hi);
+}
+
+.s-admin-nav-count {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+}
+
+.s-admin-main {
+  min-width: 0;
+}
+
+.s-admin-section-top {
+  margin-bottom: 20px;
+}
+
+.s-admin-h2 {
+  font-weight: 800;
+  font-stretch: 108%;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.s-admin-section-top .s-hint {
+  margin-top: 4px;
+}
+
+.s-admin-section > .s-alert,
+.s-admin-section > .s-notice {
+  margin-bottom: 20px;
+}
+
+/* Blocks within a section, 32px apart. */
+.s-admin-stack > * + * {
+  margin-top: 32px;
+}
+
+.s-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.s-admin-actions .s-hint {
+  margin: 0;
+}
+
+/* A block's head: the title and, at the right, one small line (a count), on one 1.5px rule.
+   The table or list under it supplies its own hairlines. */
+.s-admin-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px solid var(--ink);
+  margin-bottom: 12px;
+}
+
+.s-admin-section-head .s-hint {
+  margin: 0;
+  text-align: right;
+}
+
+.s-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .s-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.s-stats dt {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.s-stats dd {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  line-height: 1.1;
+}
+
+.s-stats dd small {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+}
+
+/* The ruled table. A block head above it draws the top rule; a table on its own draws its own. */
+.s-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.4;
+}
+
+.s-admin-stack > .s-table:first-child,
+.s-sort-phone + .s-table,
+.s-admin-stack > div + .s-table {
+  border-top: 1.5px solid var(--ink);
+}
+
+.s-table th {
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--ink-2);
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.s-table td {
+  padding: 11px 12px 12px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.s-table-tight td {
+  padding: 7px 12px 8px 0;
+}
+
+.s-table th:last-child,
+.s-table td:last-child {
+  padding-right: 0;
+}
+
+.s-table .s-col-main {
+  width: 34%;
+  min-width: 14rem;
+}
+
+.s-table .s-num {
+  text-align: right;
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-variant-numeric: tabular-nums;
+}
+
+.s-nowrap {
+  white-space: nowrap;
+}
+
+.s-table .s-mono {
+  font-size: 0.86rem;
+}
+
+/* Sorting: the whole label is the button; the drawn arrow says which way. */
+.s-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.s-sort:hover,
+th[aria-sort="ascending"] .s-sort,
+th[aria-sort="descending"] .s-sort {
+  color: var(--ink);
+}
+
+.s-sort-arrow {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.45;
+}
+
+th[aria-sort="ascending"] .s-sort-arrow,
+th[aria-sort="descending"] .s-sort-arrow {
+  opacity: 1;
+}
+
+/* A phone has no room for the date columns (they fold under the name), so the sort gets its own control. */
+.s-sort-phone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+
+.s-sort-phone .s-input {
+  width: auto;
+}
+
+@media (min-width: 720px) {
+  .s-sort-phone,
+  .s-table .s-phone-only {
+    display: none;
+  }
+}
+
+@media (max-width: 719.98px) {
+  .s-col-wide {
+    display: none;
+  }
+
+  .s-table .s-col-main {
+    width: auto;
+    min-width: 0;
+  }
+
+  /* The two row actions stack, so the table never runs past the phone's width. */
+  .s-table .s-actions .s-rowact {
+    display: block;
+    margin: 0 0 6px;
+  }
+}
+
+/* Cells: the name with its tags on one line, a sub-line under it. */
+.s-cell-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+
+.s-cell-name {
+  font-weight: 650;
+  font-stretch: 106%;
+}
+
+.s-cell-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.s-cell-sub.s-mono {
+  font-size: 0.8rem;
+}
+
+.s-dim {
+  color: var(--ink-2);
+}
+
+/* Row actions: words, underlined like links, at the row's right. */
+.s-table .s-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.s-rowact {
+  padding: 0;
+  margin-left: 14px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--rule);
+  cursor: pointer;
+  transition: text-decoration-color 120ms ease-out;
+}
+
+.s-rowact:hover,
+.s-rowact[aria-expanded="true"] {
+  text-decoration-color: var(--ink);
+}
+
+.s-rowact:disabled {
+  color: var(--ink-2);
+  text-decoration: none;
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* A row a link pointed at: the highlighter, fading. */
+.s-row-flash > td {
+  animation: s-row-flash 1.8s ease-out;
+}
+
+@keyframes s-row-flash {
+  from {
+    background-color: var(--highlight);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+/* The opened row: sheet highlight under an inked rule, its facts in two columns from 720px. */
+.s-expand > td {
+  padding: 16px 16px 18px;
+  background: var(--sheet-hi);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.s-expand-grid {
+  display: grid;
+  gap: 18px 36px;
+}
+
+@media (min-width: 720px) {
+  .s-expand-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.s-expand-title {
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.s-expand-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.s-expand-list li {
+  padding: 6px 0;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.s-expand-list li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* Key and value on one line, hairlines between (the home page's facts row is another class). */
+.s-kv {
+  margin: 0;
+}
+
+.s-kv > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) minmax(0, 1fr);
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 0.92rem;
+}
+
+.s-kv > div:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.s-kv dt {
+  color: var(--ink-2);
+}
+
+.s-kv dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.s-expand .s-delete,
+.s-expand .s-expand-grid > .s-hint {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.s-expand .s-expand-grid > .s-hint {
+  grid-column: 1 / -1;
+}
+
+/* Household seats on a person's row: ringed, like the site's neutral chips, in normal case. */
+.s-seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.s-seat {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* A small inked tag beside a name: the mode, the theme, "operator", "invited". */
+.s-tag-sm {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+/* A fact that wants attention (a household with nobody in it): the alert's red, as text. */
+.s-flag {
+  color: var(--electric);
+  font-weight: 650;
+}
+
+/* Needs attention: one line each, each a link to where it can be acted on, marked with a small
+   electric-ruled square (line work, like every use of the locate colors). */
+.s-attn {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.s-attn li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.s-attn li::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--electric);
+  position: relative;
+  top: -1px;
+}
+
+/* Delete…: folded under one word; open, a framed panel with the warning, the key to type and
+   the button. Inline, not a dialog: nothing here needs the page taken away. */
+.s-delete > summary {
+  display: inline-block;
+  list-style: none;
+  cursor: pointer;
+}
+
+.s-delete > summary::-webkit-details-marker {
+  display: none;
+}
+
+.s-delete[open] > summary {
+  text-decoration-color: var(--ink);
+}
+
+.s-delete-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px 16px 16px;
+  max-width: 560px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet);
+}
+
+.s-delete-panel .s-hint {
+  margin: 0;
+}
+
+.s-delete-panel .s-label {
+  margin-top: 4px;
+}
+
+.s-delete-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+/* The compose form: the site's form, the audience first with its pick list unfolding under the
+   chosen line, the message tall, the small fields in a row. */
+.s-compose {
+  gap: 20px;
+  max-width: 760px;
+}
+
+.s-compose-to {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.s-compose-to legend {
+  margin-bottom: 6px;
+}
+
+.s-compose .s-check input:disabled + span {
+  color: var(--ink-2);
+}
+
+.s-picklist {
+  display: grid;
+  gap: 4px 20px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 2px 0 6px 28px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+}
+
+@media (min-width: 640px) {
+  .s-picklist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.s-picklist[hidden] {
+  display: none;
+}
+
+.s-pick {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.s-pick input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  position: relative;
+  top: 2px;
+  accent-color: var(--ink);
+}
+
+.s-pick:has(input:disabled) {
+  color: var(--ink-2);
+  cursor: default;
+}
+
+.s-textarea {
+  min-height: 200px;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.s-compose-grid {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .s-compose-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr);
+  }
+}
+
+.s-compose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.s-compose-actions .s-hint {
+  margin: 0;
+}
+
+/* The one dialog on the sheet: the confirm before the operator's send. Inked frame, no radius. */
+.s-dialog {
+  margin: auto; /* the sheet's reset zeroes margins; a modal dialog centers through them */
+  max-width: min(440px, calc(100vw - 32px));
+  padding: 22px 20px 20px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet-hi);
+  color: var(--ink);
+}
+
+.s-dialog::backdrop {
+  background: rgb(0 0 0 / 0.35);
+}
+
+.s-dialog .s-hint {
+  margin-top: 10px;
+}
+
+.s-dialog-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* The destructive button: the line button in the alert's red, filled on hover. */
+.site .s-btn-danger {
+  background: transparent;
+  border-color: var(--electric);
+  color: var(--electric);
+}
+
+.site .s-btn-danger:hover {
+  background: var(--electric);
+  color: var(--sheet-hi);
+}
