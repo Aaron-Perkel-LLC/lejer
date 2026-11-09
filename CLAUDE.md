@@ -807,7 +807,7 @@ The domain uselejer.com and the GitHub repo are already connected to the Vercel 
 (`resend._domainkey` DKIM, the `send.` subdomain's MX + SPF, `_dmarc`) go in beside them and
 must never replace the root MX or the root SPF TXT. DMARC is `"v=DMARC1; p=none;"` with no
 `rua`, deliberately (no aggregate reports wanted; added 2026-10-13).
-`main` carries 0001–0018 (0018 applied 2026-10-18). After every new migration, run
+`main` carries 0001–0019 (0019 applied 2026-11-09). After every new migration, run
 `DATABASE_URL_ADMIN=<main owner URL> npm run migrate` (Node's `--env-file` never overrides a
 variable already set, so the explicit one wins over `.env.local`'s dev URL; the owner URL comes
 from `neonctl connection-string --branch main --role-name neondb_owner`, minus
