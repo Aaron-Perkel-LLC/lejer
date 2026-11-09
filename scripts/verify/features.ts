@@ -4,7 +4,7 @@
 // series and CSV, and the calendar feed's contents. The routes themselves (tokens over the
 // wire, not-found pages, the nav in real HTML) are in the http suite.
 
-import { createBill, getBill, getBillType, getOwedPairs, saveBillType, setPaid } from "@/lib/bills";
+import { createBill, deleteBill, getBill, getBillType, getOwedPairs, saveBillType, setPaid } from "@/lib/bills";
 import type { Ctx } from "@/lib/context";
 import { withHousehold } from "@/lib/db";
 import { demoCtx } from "@/lib/demo";
@@ -193,7 +193,7 @@ export async function features(r: Results, { owner }: { owner: Sql }) {
 
   const phone = await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { name: "Phone", emoji: "", processingFee: 0, ownerId: null, inTrends: false }));
   r.check("a utility saved with Show on Trends off stores it", phone.inTrends === false);
-  await withHousehold(await admin(), async (tx) => createBill(tx, await admin(), { typeId: phone.id, amount: 45, billDate: "2030-03-05", dueDate: "2030-03-25" }));
+  const phoneBill = await withHousehold(await admin(), async (tx) => createBill(tx, await admin(), { typeId: phone.id, amount: 45, billDate: "2030-03-05", dueDate: "2030-03-25" }));
   const [dbRows, dbTypes] = await withHousehold(await admin(), (tx) => Promise.all([monthTotals(tx), trendTypes(tx)]));
   r.check("trendTypes() leaves it out; the others are still there", !dbTypes.some((t) => t.id === phone.id) && dbTypes.some((t) => t.id === f.memberTypeId), dbTypes);
   const dbTrends = buildTrends(dbRows, dbTypes, "2030-04-18");
@@ -205,6 +205,8 @@ export async function features(r: Results, { owner }: { owner: Sql }) {
   r.check("ticking it again puts it back on Trends", (await withHousehold(await admin(), (tx) => trendTypes(tx))).some((t) => t.id === phone.id));
   const fresh = await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { name: "Trash", emoji: "", processingFee: 0, ownerId: null }));
   r.check("a new utility is on Trends by default", fresh.inTrends === true);
+  // The Phone bill was only for these checks; the calendar feed below counts the fixture's bills.
+  await withHousehold(await admin(), async (tx) => deleteBill(tx, await admin(), phoneBill.billId));
 
   // -------------------------------------------------------------------------------------------
   r.section("features: the calendar feed (contents)");
