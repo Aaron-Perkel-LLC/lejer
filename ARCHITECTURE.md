@@ -204,6 +204,7 @@ memberships     id, household_id, user_id, role TEXT CHECK IN ('admin','member')
                 calendar_token TEXT NOT NULL UNIQUE (32 random bytes, base64url, column default),
                 UNIQUE (household_id, user_id), UNIQUE (id, household_id)
 bill_types      id, household_id, name, emoji NULL (0012), processing_fee NUMERIC(10,2), owner_id → memberships NULL,
+                in_trends BOOLEAN DEFAULT true (0019),
                 UNIQUE (household_id, name), UNIQUE (id, household_id)
 bills           id, household_id, type_id, bill_date DATE, due_date DATE, total, per_person_cost,
                 status, pdf_path TEXT NULL, added_by_id NULL,
@@ -738,6 +739,15 @@ and for the import script.
   (overview, bills, the add-bill select, Settings, trends, the calendar feed, the tour) prints
   the emoji and a space only when there is one. Emails never carried it. The Settings dialog's
   field starts empty with the hint as placeholder text ("Optional, e.g. ⚡").
+- **A utility can be left off Trends** (0019, 2026-11-09). Flat bills (internet, a phone plan,
+  insurance) only flatten the chart, so each utility has "Show on Trends" in its Settings dialog,
+  on by default, shown while `feature_trends` is on (a save without the field keeps the stored
+  value, so turning Trends off and on never resets it). Off means `bill_types.in_trends = false`:
+  `trendTypes()` skips it and `buildTrends`/`trendsCsv` drop its bills before counting, so it has
+  no series, no totals row, no CSV column and doesn't move the chart's first month; nobody can
+  toggle it back on from the Trends page's legend. The remaining types take the series slots in
+  creation order. Its bills stay everywhere else, the `/household/export` CSV included. The
+  Utilities table marks one left off with "Not on Trends" under its name.
 - **Invites by email.** An admin enters name + email (+ role, `splits_bills`). This upserts the
   `users` row (name only if new) and inserts a `memberships` row with `joined_at NULL`. Resend
   sends "{Admin} added you to {Household} on Lejer" with a `/login?email=&next=/{slug}` link. The email-code

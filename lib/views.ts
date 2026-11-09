@@ -246,7 +246,7 @@ export async function loadBulkEmail(ctx: Ctx): Promise<BulkEmailView> {
 /** /trends: monthly totals per type through this month, in the household's calendar. */
 export async function loadTrends(ctx: Ctx): Promise<Trends> {
   const today = localDate(ctx.household.timezone);
-  if (ctx.demo) return buildTrends(demoMonthTotals(today), DEMO_BILL_TYPES, today);
+  if (ctx.demo) return buildTrends(demoMonthTotals(today), DEMO_BILL_TYPES.filter((t) => t.inTrends), today);
   return withHousehold(ctx, async (tx) => {
     const [totals, types] = await Promise.all([monthTotals(tx), trendTypes(tx)]);
     return buildTrends(totals, types, today);
@@ -255,7 +255,7 @@ export async function loadTrends(ctx: Ctx): Promise<Trends> {
 
 /** /trends/csv: the whole history, every type its own column. */
 export async function loadTrendsCsv(ctx: Ctx): Promise<string> {
-  if (ctx.demo) return trendsCsv(demoMonthTotals(localDate(ctx.household.timezone)), DEMO_BILL_TYPES);
+  if (ctx.demo) return trendsCsv(demoMonthTotals(localDate(ctx.household.timezone)), DEMO_BILL_TYPES.filter((t) => t.inTrends));
   return withHousehold(ctx, async (tx) => {
     const [totals, types] = await Promise.all([monthTotals(tx), trendTypes(tx)]);
     return trendsCsv(totals, types);

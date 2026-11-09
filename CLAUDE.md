@@ -317,7 +317,8 @@ Tables (all tenant tables carry `household_id`; children also have composite FKs
   `muted_kinds` the mail categories they unsubscribed from, 0014) —
   everything per-person per-household hangs off `memberships.id`, not `users.id`
 - `bill_types` (`name` unique per household, `emoji` optional, NULL for none (0012), `processing_fee`, `owner_id` →
-  memberships, SET NULL on delete)
+  memberships, SET NULL on delete, `in_trends`: "Show on Trends", off leaves the type out of the
+  chart, totals and CSV, 0019)
 - `bills` (`type_id` RESTRICT, `bill_date`, `due_date`, `total`, `per_person_cost`, `status`
   `unpaid`|`paid` as a CHECK, `pdf_path`, `added_by_id`, `owner_id` → memberships SET NULL +
   `had_owner`, both set at post time from the type's owner, 0004; `fee`, `shares`,
@@ -608,7 +609,7 @@ scheduler was a GitHub Actions workflow, chosen while the project was on Hobby.)
 - `app/documents/` — household paperwork (feature-gated); everyone reads, admins manage:
   "+ Add document" in the header slot (`AddDocumentDialog`, client-direct upload), Edit per row
   (`EditDocumentDialog`; Remove confirms inside it)
-- `app/trends/` — Chart.js line per bill type (series slots from `--series-N`, HTML legend
+- `app/trends/` — Chart.js line per bill type left on Trends (`in_trends`, set per utility in Settings; series slots from `--series-N`, HTML legend
   toggles, rebuilt on theme/scheme change), totals table with "Download CSV" on its rule (the
   whole history at `/trends/csv`; feature-gated; `lib/trends.ts` is pure, so the demo shares it)
 - `app/welcome/` — the animated tour (feature-gated, on by default for a new household since
@@ -806,7 +807,7 @@ The domain uselejer.com and the GitHub repo are already connected to the Vercel 
 (`resend._domainkey` DKIM, the `send.` subdomain's MX + SPF, `_dmarc`) go in beside them and
 must never replace the root MX or the root SPF TXT. DMARC is `"v=DMARC1; p=none;"` with no
 `rua`, deliberately (no aggregate reports wanted; added 2026-10-13).
-`main` carries 0001–0018 (0018 applied 2026-10-18). After every new migration, run
+`main` carries 0001–0019 (0019 applied 2026-11-09). After every new migration, run
 `DATABASE_URL_ADMIN=<main owner URL> npm run migrate` (Node's `--env-file` never overrides a
 variable already set, so the explicit one wins over `.env.local`'s dev URL; the owner URL comes
 from `neonctl connection-string --branch main --role-name neondb_owner`, minus

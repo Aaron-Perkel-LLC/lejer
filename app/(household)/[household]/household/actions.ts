@@ -195,6 +195,8 @@ export async function saveBillTypeAction(formData: FormData): Promise<void> {
         emoji: String(formData.get("emoji") ?? ""),
         processingFee: fee === "" ? 0 : /^\d+(\.\d{1,2})?$/.test(fee) ? Number(fee) : NaN,
         ownerId: ownerRaw ? Number(ownerRaw) : null,
+        // The checkbox is only on the form while Trends is on; without it the setting is kept.
+        inTrends: formData.has("trendsField") ? formData.get("inTrends") === "on" : undefined,
       }),
     ),
   );
