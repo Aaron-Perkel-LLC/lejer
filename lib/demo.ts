@@ -37,10 +37,10 @@ export const DEMO_PEOPLE: DemoPerson[] = [
 export const DEMO_VIEWER = DEMO_PEOPLE[0];
 
 export const DEMO_BILL_TYPES: BillType[] = [
-  { id: 1, name: "Electric", emoji: "⚡", processingFee: 0, ownerId: 2, ownerName: "Jordan" },
-  { id: 2, name: "Gas", emoji: "🔥", processingFee: 0, ownerId: 3, ownerName: "Casey" },
-  { id: 3, name: "Water", emoji: "💧", processingFee: 0, ownerId: 4, ownerName: "Morgan" },
-  { id: 4, name: "Wifi", emoji: "🛜", processingFee: 0, ownerId: 1, ownerName: "Robin" },
+  { id: 1, name: "Electric", emoji: "⚡", processingFee: 0, ownerId: 2, ownerName: "Jordan", inTrends: true },
+  { id: 2, name: "Gas", emoji: "🔥", processingFee: 0, ownerId: 3, ownerName: "Casey", inTrends: true },
+  { id: 3, name: "Water", emoji: "💧", processingFee: 0, ownerId: 4, ownerName: "Morgan", inTrends: true },
+  { id: 4, name: "Wifi", emoji: "🛜", processingFee: 0, ownerId: 1, ownerName: "Robin", inTrends: true },
 ];
 
 const bill = (id: number, typeId: number, billOffset: number, dueOffset: number, total: number, perPersonCost: number): Bill => {

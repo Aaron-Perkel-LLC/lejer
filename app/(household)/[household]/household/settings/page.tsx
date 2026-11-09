@@ -44,7 +44,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/[househ
       </header>
       <Flash ok={ok} err={err} />
       <div className="mb-8">
-        <UtilitiesSection types={types} people={members} ledger={h.mode === "ledger"} canEdit={isAdmin} />
+        <UtilitiesSection types={types} people={members} ledger={h.mode === "ledger"} trends={h.featureTrends} canEdit={isAdmin} />
       </div>
       {isAdmin ? (
         <SettingsForm

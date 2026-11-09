@@ -4,7 +4,9 @@ import { SERIES_SLOTS } from "@/lib/theme-tokens";
 // Trends (feature_trends): what each bill type cost, month by month, by statement date. Ported
 // from utilities, which hard-coded Gas and Electric; here every type is a series. Colors follow
 // the type, never its rank: types take the theme's series slots in the order they were created,
-// and a sixth type onward folds into "Other" (DESIGN.md, Colors > Data series).
+// and a sixth type onward folds into "Other" (DESIGN.md, Colors > Data series). A type an admin
+// left off Trends (bill_types.in_trends, 0019) is not a series at all: trendTypes() skips it, its
+// bills are dropped before anything is counted, and the remaining types take the slots.
 
 export interface MonthTotal {
   month: string; // YYYY-MM
@@ -67,11 +69,18 @@ export function monthTotals(tx: Tx): Promise<MonthTotal[]> {
 }
 
 export function trendTypes(tx: Tx): Promise<TrendType[]> {
-  return tx<TrendType[]>`SELECT id, name, emoji FROM bill_types ORDER BY id`;
+  return tx<TrendType[]>`SELECT id, name, emoji FROM bill_types WHERE in_trends ORDER BY id`;
+}
+
+/** The rows of the types being charted; a type left off Trends counts nowhere, not even `since`. */
+function onlyTypes(rows: MonthTotal[], types: TrendType[]): MonthTotal[] {
+  const ids = new Set(types.map((t) => t.id));
+  return rows.filter((r) => ids.has(r.typeId));
 }
 
 /** The chart, the totals table and the CSV all come from here; `today` is the household's date. */
-export function buildTrends(rows: MonthTotal[], types: TrendType[], today: string): Trends {
+export function buildTrends(allRows: MonthTotal[], types: TrendType[], today: string): Trends {
+  const rows = onlyTypes(allRows, types);
   const thisMonth = today.slice(0, 7);
   const year = today.slice(0, 4);
   const since = rows.length ? rows.reduce((min, r) => (r.month < min ? r.month : min), rows[0].month) : null;
@@ -141,8 +150,9 @@ export function csvField(raw: string): string {
   return /[",\n\r]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
 }
 
-/** Full history as CSV: one row per month on record, one column per bill type (none folded). */
-export function trendsCsv(rows: MonthTotal[], types: TrendType[]): string {
+/** Full history as CSV: one row per month on record, one column per charted bill type (none folded). */
+export function trendsCsv(allRows: MonthTotal[], types: TrendType[]): string {
+  const rows = onlyTypes(allRows, types);
   const months = [...new Set(rows.map((r) => r.month))].sort();
   const at = new Map(rows.map((r) => [`${r.month}:${r.typeId}`, r.total]));
   const lines = [["Month", ...types.map((t) => t.name), "Total"].map(csvField).join(",")];

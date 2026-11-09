@@ -4,7 +4,7 @@
 // series and CSV, and the calendar feed's contents. The routes themselves (tokens over the
 // wire, not-found pages, the nav in real HTML) are in the http suite.
 
-import { createBill, getBill, getOwedPairs, setPaid } from "@/lib/bills";
+import { createBill, getBill, getBillType, getOwedPairs, saveBillType, setPaid } from "@/lib/bills";
 import type { Ctx } from "@/lib/context";
 import { withHousehold } from "@/lib/db";
 import { demoCtx } from "@/lib/demo";
@@ -12,7 +12,7 @@ import { ActionError } from "@/lib/errors";
 import { navLinks } from "@/lib/features";
 import { buildCalendar, calendarLinks, isCalendarToken } from "@/lib/ics";
 import { type SettingsForm, parseLook, parseSettings, saveLook, saveSettings, settingsFormFrom } from "@/lib/settings";
-import { buildTrends, trendsCsv } from "@/lib/trends";
+import { buildTrends, monthTotals, trendTypes, trendsCsv } from "@/lib/trends";
 import { type Results, type Sql, addMember, ctxFor, makeHousehold } from "./harness";
 
 export async function features(r: Results, { owner }: { owner: Sql }) {
@@ -176,6 +176,35 @@ export async function features(r: Results, { owner }: { owner: Sql }) {
   r.check("a long history still charts only the last 12 months", long.months.length === 12 && long.months[0] === "2029-05");
   const csv = trendsCsv([{ month: "2030-03", typeId: 1, total: 70.5 }, { month: "2030-03", typeId: 2, total: 9 }], [{ id: 1, name: "=HYPERLINK(1)", emoji: "" }, { id: 2, name: 'Gas, "fixed"', emoji: "" }]);
   r.check("CSV: a formula-looking name is defused and commas/quotes are quoted", csv.startsWith(`Month,'=HYPERLINK(1),"Gas, ""fixed""",Total\r\n2030-03,70.50,9.00,79.50`), csv);
+
+  // A type left off Trends (0019) is passed over by trendTypes(); its rows must count nowhere.
+  const kept = buildTrends(
+    [
+      { month: "2029-01", typeId: 9, total: 999 },
+      { month: "2030-03", typeId: 1, total: 70.5 },
+    ],
+    types.slice(0, 5),
+    "2030-04-18",
+  );
+  r.check("a type left off Trends: no series, no Other, and its bills don't move the window", kept.series.length === 5 && kept.since === "2030-03" && kept.months[0] === "2030-03", { since: kept.since, series: kept.series.map((s) => s.key) });
+  r.check("…nor any total", kept.totals.every((t) => t.allTime === null || t.allTime === 70.5));
+  const keptCsv = trendsCsv([{ month: "2029-01", typeId: 9, total: 999 }, { month: "2030-03", typeId: 1, total: 70.5 }], [{ id: 1, name: "Gas", emoji: null }]);
+  r.check("…nor a CSV row or column", keptCsv === "Month,Gas,Total\r\n2030-03,70.50,70.50\r\n", keptCsv);
+
+  const phone = await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { name: "Phone", emoji: "", processingFee: 0, ownerId: null, inTrends: false }));
+  r.check("a utility saved with Show on Trends off stores it", phone.inTrends === false);
+  await withHousehold(await admin(), async (tx) => createBill(tx, await admin(), { typeId: phone.id, amount: 45, billDate: "2030-03-05", dueDate: "2030-03-25" }));
+  const [dbRows, dbTypes] = await withHousehold(await admin(), (tx) => Promise.all([monthTotals(tx), trendTypes(tx)]));
+  r.check("trendTypes() leaves it out; the others are still there", !dbTypes.some((t) => t.id === phone.id) && dbTypes.some((t) => t.id === f.memberTypeId), dbTypes);
+  const dbTrends = buildTrends(dbRows, dbTypes, "2030-04-18");
+  r.check("…so Trends has no Phone series or totals row", !dbTrends.series.some((s) => s.label === "Phone") && !dbTrends.totals.some((t) => t.label === "Phone"));
+  r.check("…and the CSV no Phone column", !trendsCsv(dbRows, dbTypes).split("\r\n")[0].includes("Phone"));
+  await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { id: phone.id, name: "Phone", emoji: "📱", processingFee: 0, ownerId: null }));
+  r.check("an edit that doesn't send the setting (Trends off) keeps it", (await withHousehold(await admin(), (tx) => getBillType(tx, phone.id)))?.inTrends === false);
+  await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { id: phone.id, name: "Phone", emoji: "📱", processingFee: 0, ownerId: null, inTrends: true }));
+  r.check("ticking it again puts it back on Trends", (await withHousehold(await admin(), (tx) => trendTypes(tx))).some((t) => t.id === phone.id));
+  const fresh = await withHousehold(await admin(), async (tx) => saveBillType(tx, await admin(), { name: "Trash", emoji: "", processingFee: 0, ownerId: null }));
+  r.check("a new utility is on Trends by default", fresh.inTrends === true);
 
   // -------------------------------------------------------------------------------------------
   r.section("features: the calendar feed (contents)");

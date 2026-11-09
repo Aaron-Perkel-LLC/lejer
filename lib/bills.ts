@@ -31,6 +31,8 @@ export interface BillType {
   processingFee: number;
   ownerId: number | null;
   ownerName: string | null;
+  /** Charted on Trends (0019); off leaves it out of the chart, the totals and the CSV. */
+  inTrends: boolean;
 }
 
 export interface Bill {
@@ -85,7 +87,7 @@ export interface Person {
 
 const typeSelect = (tx: Tx) => tx`
   SELECT t.id, t.name, t.emoji, t.processing_fee AS "processingFee",
-         t.owner_id AS "ownerId", ou.name AS "ownerName"
+         t.owner_id AS "ownerId", ou.name AS "ownerName", t.in_trends AS "inTrends"
   FROM bill_types t
   LEFT JOIN memberships om ON om.id = t.owner_id
   LEFT JOIN users ou ON ou.id = om.user_id`;
@@ -685,6 +687,8 @@ export interface BillTypeInput {
   emoji: string;
   processingFee: number;
   ownerId: number | null;
+  /** Show on Trends; omitted means on for a new type and unchanged for an edit. */
+  inTrends?: boolean;
 }
 
 /** Add or edit a bill type (admins). In single_payer mode the owner is always the payer. */
@@ -701,11 +705,12 @@ export async function saveBillType(tx: Tx, ctx: Ctx, input: BillTypeInput): Prom
   try {
     const [row] = input.id
       ? await tx<{ id: number }[]>`
-          UPDATE bill_types SET name = ${name}, emoji = ${emoji}, processing_fee = ${input.processingFee}, owner_id = ${ownerId}
+          UPDATE bill_types SET name = ${name}, emoji = ${emoji}, processing_fee = ${input.processingFee}, owner_id = ${ownerId},
+                 in_trends = COALESCE(${input.inTrends ?? null}::boolean, in_trends)
           WHERE id = ${input.id} RETURNING id`
       : await tx<{ id: number }[]>`
-          INSERT INTO bill_types (household_id, name, emoji, processing_fee, owner_id)
-          VALUES (${ctx.household.id}, ${name}, ${emoji}, ${input.processingFee}, ${ownerId}) RETURNING id`;
+          INSERT INTO bill_types (household_id, name, emoji, processing_fee, owner_id, in_trends)
+          VALUES (${ctx.household.id}, ${name}, ${emoji}, ${input.processingFee}, ${ownerId}, ${input.inTrends ?? true}) RETURNING id`;
     if (!row) throw new ActionError("That bill type no longer exists.");
     return (await getBillType(tx, row.id))!;
   } catch (e) {
